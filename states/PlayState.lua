@@ -22,6 +22,7 @@ function PlayState:init()
     self.pipePairs = {}
     self.timer = 0
     self.score = 0
+    self.pipeSpawnTimer = 5
 
     -- initialize our last recorded Y value for a gap placement to base other gaps off of
     self.lastY = -PIPE_HEIGHT + math.random(80) + 20
@@ -32,7 +33,7 @@ function PlayState:update(dt)
     self.timer = self.timer + dt
 
     -- spawn a new pipe pair every second and a half
-    if self.timer > 2 then
+    if self.timer > self.pipeSpawnTimer then
         -- modify the last Y coordinate we placed so pipe gaps aren't too far apart
         -- no higher than 10 pixels below the top edge of the screen,
         -- and no lower than a gap length (90 pixels) from the bottom
@@ -54,6 +55,12 @@ function PlayState:update(dt)
         if not pair.scored then
             if pair.x + PIPE_WIDTH < self.bird.x then
                 self.score = self.score + 1
+                -- aadd more difficaulty when score is incremented
+                if (self.score % 10) == 0 then
+                    if (self.pipeSpawnTimer > 1.5) then
+                        self.pipeSpawnTimer = self.pipeSpawnTimer - 0.25 
+                    end
+                end
                 pair.scored = true
                 sounds['score']:play()
             end
