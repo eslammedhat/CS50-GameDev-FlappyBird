@@ -22,7 +22,11 @@ function PlayState:init()
     self.pipePairs = {}
     self.timer = 0
     self.score = 0
-    self.pipeSpawnTimer = 5
+
+    self.pipeSpawnTimer = 8
+    self.pipeSpawnTimerHighRange = 10
+    self.pipeSpawnTimerLowRange = 2
+
 
     -- initialize our last recorded Y value for a gap placement to base other gaps off of
     self.lastY = -PIPE_HEIGHT + math.random(80) + 20
@@ -44,6 +48,9 @@ function PlayState:update(dt)
         -- add a new pipe pair at the end of the screen at our new Y
         table.insert(self.pipePairs, PipePair(y))
 
+        -- spawn pipes at random time
+        self.pipeSpawnTimer = math.random(self.pipeSpawnTimerLowRange, self.pipeSpawnTimerHighRange);
+
         -- reset timer
         self.timer = 0
     end
@@ -55,12 +62,8 @@ function PlayState:update(dt)
         if not pair.scored then
             if pair.x + PIPE_WIDTH < self.bird.x then
                 self.score = self.score + 1
-                -- aadd more difficaulty when score is incremented
-                if (self.score % 10) == 0 then
-                    if (self.pipeSpawnTimer > 1.5) then
-                        self.pipeSpawnTimer = self.pipeSpawnTimer - 0.25 
-                    end
-                end
+                -- add more difficaulty when score is incremented
+                IncreaseDifficulty()
                 pair.scored = true
                 sounds['score']:play()
             end
@@ -107,6 +110,17 @@ function PlayState:update(dt)
         })
     end
 end
+
+
+function PlayState:IncreaseDifficulty()
+    if (self.score % 7) == 0 then
+        if (self.pipeSpawnTimerHighRange > self.pipeSpawnTimerLowRange) then
+            self.pipeSpawnTimerHighRange = self.pipeSpawnTimerHighRange - 0.25
+        end
+    end
+end
+
+
 
 function PlayState:render()
     for k, pair in pairs(self.pipePairs) do
