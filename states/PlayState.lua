@@ -23,9 +23,16 @@ function PlayState:init()
     self.timer = 0
     self.score = 0
 
+    -- pipes spawn interval
     self.pipeSpawnTimer = 8
     self.pipeSpawnTimerHighRange = 10
     self.pipeSpawnTimerLowRange = 2
+
+    -- pipes gap hight
+    self.pipesGapHight = 120
+    self.minPipesGapHight = 60
+    self.maxPipesGapHight = 140
+
 
 
     -- initialize our last recorded Y value for a gap placement to base other gaps off of
@@ -36,8 +43,12 @@ function PlayState:update(dt)
     -- update timer for pipe spawning
     self.timer = self.timer + dt
 
-    -- spawn a new pipe pair every second and a half
+    -- spawn a new pipe pair
     if self.timer > self.pipeSpawnTimer then
+
+        -- calculate new gap size
+        self.pipesGapHight = math.random(self.minPipesGapHight, self.maxPipesGapHight)
+
         -- modify the last Y coordinate we placed so pipe gaps aren't too far apart
         -- no higher than 10 pixels below the top edge of the screen,
         -- and no lower than a gap length (90 pixels) from the bottom
@@ -46,7 +57,7 @@ function PlayState:update(dt)
         self.lastY = y
 
         -- add a new pipe pair at the end of the screen at our new Y
-        table.insert(self.pipePairs, PipePair(y))
+        table.insert(self.pipePairs, PipePair(y, self.pipesGapHight))
 
         -- spawn pipes at random time
         self.pipeSpawnTimer = math.random(self.pipeSpawnTimerLowRange, self.pipeSpawnTimerHighRange);
@@ -63,7 +74,7 @@ function PlayState:update(dt)
             if pair.x + PIPE_WIDTH < self.bird.x then
                 self.score = self.score + 1
                 -- add more difficaulty when score is incremented
-                IncreaseDifficulty()
+                self:IncreaseDifficulty()
                 pair.scored = true
                 sounds['score']:play()
             end
@@ -114,8 +125,14 @@ end
 
 function PlayState:IncreaseDifficulty()
     if (self.score % 7) == 0 then
+        -- titen up the pipe spawn interval
         if (self.pipeSpawnTimerHighRange > self.pipeSpawnTimerLowRange) then
             self.pipeSpawnTimerHighRange = self.pipeSpawnTimerHighRange - 0.25
+        end
+
+        -- titen up gap size between pipes
+        if(self.maxPipesGapHight > self.minPipesGapHight) then
+            self.maxPipesGapHight = self.maxPipesGapHight - 5
         end
     end
 end
