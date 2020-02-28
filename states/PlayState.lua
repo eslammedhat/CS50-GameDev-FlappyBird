@@ -30,7 +30,7 @@ function PlayState:init()
 
     -- pipes gap hight
     self.pipesGapHight = 120
-    self.minPipesGapHight = 60
+    self.minPipesGapHight = 70  
     self.maxPipesGapHight = 140
 
     -- pause feature
