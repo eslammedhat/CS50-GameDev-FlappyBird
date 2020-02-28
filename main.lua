@@ -62,6 +62,8 @@ local GROUND_SCROLL_SPEED = 60
 
 local BACKGROUND_LOOPING_POINT = 413
 
+local isNotPaused = true
+
 function love.load()
     -- initialize our nearest-neighbor filter
     love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -87,7 +89,8 @@ function love.load()
         ['score'] = love.audio.newSource('score.wav', 'static'),
 
         -- https://freesound.org/people/xsgianni/sounds/388079/
-        ['music'] = love.audio.newSource('marios_way.mp3', 'static')
+        ['music'] = love.audio.newSource('marios_way.mp3', 'static'),
+        ['pause'] = love.audio.newSource('pause.wav', 'static')
     }
 
     -- kick off music
@@ -154,11 +157,23 @@ function love.mouse.wasPressed(button)
 end
 
 function love.update(dt)
-    -- scroll our background and ground, looping back to 0 after a certain amount
-    backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
-    groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
 
-    gStateMachine:update(dt)
+    if(isNotPaused) then
+        -- scroll our background and ground, looping back to 0 after a certain amount
+        backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
+        groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+        gStateMachine:update(dt)
+    end
+
+    if love.keyboard.wasPressed('p') then
+        isNotPaused = not isNotPaused
+        sounds['pause']:play()
+        if(isNotPaused) then
+            sounds['music']:play()
+        else 
+            sounds['music']:pause()
+        end
+    end
 
     love.keyboard.keysPressed = {}
     love.mouse.buttonsPressed = {}
@@ -168,8 +183,13 @@ function love.draw()
     push:start()
     
     love.graphics.draw(background, -backgroundScroll, 0)
-    gStateMachine:render()
+    if(isNotPaused) then
+        gStateMachine:render()
+    else 
+        love.graphics.setFont(hugeFont)
+        love.graphics.printf('II', 0, 110, VIRTUAL_WIDTH, 'center')
+    end
     love.graphics.draw(ground, -groundScroll, VIRTUAL_HEIGHT - 16)
-    
+
     push:finish()
 end
